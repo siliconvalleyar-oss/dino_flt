@@ -9,6 +9,8 @@ class Obstacle extends PositionComponent {
   final ObstacleType type;
   bool passed = false;
   Sprite? _aveSprite;
+  double _wingTimer = 0;
+  final double _wingSpeed = 8;
 
   Obstacle({required this.type});
 
@@ -53,6 +55,14 @@ class Obstacle extends PositionComponent {
     x -= speed * dt * 60;
   }
 
+  @override
+  void update(double dt) {
+    super.update(dt);
+    if (type == ObstacleType.pterodactyl) {
+      _wingTimer += dt;
+    }
+  }
+
   bool get isOffScreen => x < -100;
 
   @override
@@ -92,8 +102,14 @@ class Obstacle extends PositionComponent {
         canvas.drawRect(Rect.fromLTWH(24, 32, 6, 5), paint);
 
       case ObstacleType.pterodactyl:
+        final wingScale = 1.0 + sin(_wingTimer * _wingSpeed) * 0.25;
+        final drawH = size.y * wingScale;
+        final drawY = (size.y - drawH) / 2;
         if (_aveSprite != null) {
-          _aveSprite!.render(canvas, size: size);
+          canvas.save();
+          canvas.translate(0, drawY);
+          _aveSprite!.render(canvas, size: Vector2(size.x, drawH));
+          canvas.restore();
         } else {
           paint.color = const Color(0xFF757575);
           canvas.drawRRect(
